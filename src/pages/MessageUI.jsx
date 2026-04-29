@@ -93,9 +93,12 @@ export default function MessageUI() {
     try {
       setDeleting(true);
 
-      await fetch(`http://localhost:5000/api/messages/${messageId}`, {
-        method: "DELETE",
-      });
+      await fetch(
+        `http://save-a-child-charity-backend.onrender.com/api/messages/${messageId}`,
+        {
+          method: "DELETE",
+        },
+      );
 
       setMessages((prev) => prev.filter((msg) => msg._id !== messageId));
     } catch (err) {

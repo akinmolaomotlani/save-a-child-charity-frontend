@@ -67,18 +67,21 @@ export default function AdminDashboard() {
         finalSubject = `Re: ${selectedUser.lastSubject}`;
       }
 
-      const res = await fetch("http://localhost:5000/api/messages/send", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const res = await fetch(
+        "http://save-a-child-charity-backend.onrender.com/api/messages/send",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            sender: ADMIN_ID,
+            receiver: selectedUser._id,
+            subject: finalSubject,
+            content: message,
+          }),
         },
-        body: JSON.stringify({
-          sender: ADMIN_ID,
-          receiver: selectedUser._id,
-          subject: finalSubject,
-          content: message,
-        }),
-      });
+      );
 
       if (!res.ok) throw new Error("Failed");
 

@@ -59,7 +59,7 @@ export default function Donate() {
 
       // 2️⃣ Call backend
       const res = await fetch(
-        "http://localhost:5000/api/payments/create-payment-intent",
+        "http://save-a-child-charity-backend.onrender.com/api/payments/create-payment-intent",
         {
           method: "POST",
           headers: {
