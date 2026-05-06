@@ -15,70 +15,170 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { user, logout } = useContext(AuthContext);
 
-  const savedUser = user || JSON.parse(localStorage.getItem("user") || "{}");
-  const userId = savedUser?.id || savedUser?._id;
+  // ✅ safer user id
+  const userId = user?._id || user?.id;
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showMessageDropdown, setShowMessageDropdown] = useState(false);
+
   const [messages, setMessages] = useState([]);
+  const [selectedMessage, setSelectedMessage] = useState(null);
+
+  const [showEmailModal, setShowEmailModal] = useState(false);
+
+  const [replyText, setReplyText] = useState("");
+
+  const [messageThread, setMessageThread] = useState([]);
+
+  const unreadCount = messages.filter(
+    (msg) => !msg.read && String(msg.receiver?._id) === String(userId),
+  ).length;
 
   const dropdownRef = useRef(null);
 
+  // ✅ Campaigns
   const [campaigns] = useState([
     { id: 1, title: "Feed 100 Children", progress: 70 },
     { id: 2, title: "Clean Water Project", progress: 40 },
     { id: 3, title: "School Supplies Drive", progress: 85 },
   ]);
 
+  // ✅ Activities
   const [activities] = useState([
     { id: 1, text: "You donated to Feed 100 Children", time: "2h ago" },
     { id: 2, text: "New campaign launched", time: "5h ago" },
     { id: 3, text: "Volunteer event coming soon", time: "1 day ago" },
   ]);
 
-  // ✅ Fetch messages safely
+  // ✅ FETCH ALL USER MESSAGES
   const fetchMessages = async () => {
     if (!userId) return;
 
     try {
-      const res = await fetch(
-        `http://localhost:5000/api/messages/unread/${userId}`,
-      );
+      const res = await fetch(`http://localhost:5000/api/messages/${userId}`);
+
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("Fetch error:", text);
+        return;
+      }
 
       const data = await res.json();
 
-      setMessages(Array.isArray(data) ? data : data.messages || []);
+      setMessages(data.messages || []);
     } catch (err) {
       console.log(err);
     }
   };
-
-  // ✅ Mark messages as read
+  // ✅ MARK AS READ
   const markAsRead = async () => {
     try {
       await fetch(`http://localhost:5000/api/messages/read/${userId}`, {
         method: "PUT",
       });
-
-      setMessages([]);
     } catch (err) {
       console.log(err);
     }
   };
 
-  // ✅ Navigate to messages page (NO duplicate markAsRead here)
-  const handleOpenMessages = () => {
+  // ✅ OPEN THREAD
+  const handleOpenMessages = async (msg) => {
     setShowMessageDropdown(false);
-    navigate(`/messages/${userId}`);
+
+    setSelectedMessage(msg);
+
+    setShowEmailModal(true);
+
+    try {
+      // ✅ NEW: match admin logic
+      const otherUserId =
+        String(msg.sender?._id) === String(userId)
+          ? msg.receiver?._id
+          : msg.sender?._id;
+
+      const res = await fetch(
+        `http://localhost:5000/api/messages/conversation/${userId}/${otherUserId}`,
+      );
+
+      const data = await res.json();
+
+      console.log("THREAD:", data);
+
+      setMessageThread(data.messages || []);
+    } catch (err) {
+      console.log(err);
+
+      setMessageThread([msg]);
+    }
   };
 
+  // ✅ SEND REPLY
+  const handleSendReply = async () => {
+    if (!replyText.trim()) return;
+
+    try {
+      // ✅ FIXED PAYLOAD
+      const payload = {
+        sender: userId,
+        receiver:
+          String(selectedMessage.sender?._id) === String(userId)
+            ? selectedMessage.receiver?._id
+            : selectedMessage.sender?._id,
+
+        content: replyText,
+
+        subject: selectedMessage.subject || "No Subject",
+
+        threadId: selectedMessage.threadId,
+      };
+
+      console.log("SENDING:", payload);
+
+      const res = await fetch(`http://localhost:5000/api/messages/send`, {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+        },
+
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+
+      console.log("REPLY RESPONSE:", data);
+
+      if (!data.success) {
+        return alert(data.message || "Failed to send");
+      }
+
+      // ✅ use backend saved message
+      setMessageThread((prev) => [...prev, data.message]);
+
+      setReplyText("");
+
+      // ✅ refresh inbox
+      fetchMessages();
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  // ✅ INITIAL FETCH
   useEffect(() => {
     fetchMessages();
-    const interval = setInterval(fetchMessages, 5000);
+  }, [userId]);
+
+  // ✅ OPTIONAL AUTO REFRESH
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchMessages();
+    }, 30000);
+
     return () => clearInterval(interval);
   }, [userId]);
 
-  // ✅ Better outside click handling
+  // ✅ CLOSE DROPDOWN OUTSIDE CLICK
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -86,21 +186,23 @@ export default function Dashboard() {
       }
     };
 
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // ✅ LOGOUT
   const handleLogout = () => {
     logout?.();
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+
     navigate("/login");
   };
 
+  // ✅ AVATAR INITIALS
   const getInitials = () => {
-    if (!savedUser?.name) return "U";
+    if (!user?.name) return "U";
 
-    return savedUser.name
+    return user.name
       .split(" ")
       .map((n) => n[0])
       .join("")
@@ -108,8 +210,8 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-blue-50 flex">
-      {/* Overlay */}
+    <div className="min-h-screen flex bg-gradient-to-br from-orange-50 via-white to-blue-50">
+      {/* OVERLAY */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/40 z-40 md:hidden"
@@ -117,192 +219,192 @@ export default function Dashboard() {
         />
       )}
 
-      {/* Sidebar */}
+      {/* SIDEBAR */}
       <div
-        className={`fixed md:static top-0 left-0 h-full w-72 bg-white/90 backdrop-blur-xl shadow-2xl p-6 z-50 transform transition-all duration-300 ${
+        className={`fixed md:static z-50 top-0 left-0 h-full w-72 bg-white shadow-xl p-6 transform transition-all duration-300 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
       >
         <div className="flex justify-between items-center mb-10">
           <div>
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-blue-600 bg-clip-text text-transparent">
-              Save The Child
-            </h2>
-            <p className="text-sm text-gray-500">User Dashboard</p>
+            <h2 className="text-xl font-bold text-blue-600">Save The Child</h2>
+
+            <p className="text-sm text-gray-500">Dashboard</p>
           </div>
 
           <FiX
-            className="text-xl cursor-pointer md:hidden"
+            className="cursor-pointer md:hidden"
             onClick={() => setSidebarOpen(false)}
           />
         </div>
 
+        {/* NAVIGATION */}
         <div className="space-y-3">
-          {["Dashboard", "Donations", "Campaigns", "Volunteers"].map((item) => (
-            <button
-              key={item}
-              className="w-full text-left px-4 py-3 rounded-2xl font-medium text-gray-700 hover:bg-gradient-to-r hover:from-orange-500 hover:to-blue-500 hover:text-white transition"
-            >
-              {item}
-            </button>
-          ))}
+          <button
+            onClick={() => navigate("/donate")}
+            className="w-full text-left px-4 py-3 rounded-xl hover:bg-orange-100 transition"
+          >
+            Donate
+          </button>
+
+          <button
+            onClick={() => navigate("/volunteer")}
+            className="w-full text-left px-4 py-3 rounded-xl hover:bg-blue-100 transition"
+          >
+            Volunteer
+          </button>
+
+          <button
+            onClick={() => navigate("/activities")}
+            className="w-full text-left px-4 py-3 rounded-xl hover:bg-green-100 transition"
+          >
+            Activities
+          </button>
         </div>
 
         <button
           onClick={handleLogout}
-          className="mt-12 w-full bg-gradient-to-r from-orange-500 to-blue-500 text-white py-3 rounded-2xl font-semibold shadow-lg hover:opacity-90"
+          className="mt-10 w-full bg-gradient-to-r from-orange-500 to-blue-500 text-white py-3 rounded-xl font-semibold"
         >
           Logout
         </button>
       </div>
 
-      {/* Main */}
+      {/* MAIN */}
       <div className="flex-1 p-4 md:p-8">
-        {/* Header */}
+        {/* HEADER */}
         <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center gap-3">
-            <FiMenu
-              className="text-2xl cursor-pointer md:hidden"
-              onClick={() => setSidebarOpen(true)}
-            />
+          <FiMenu
+            className="text-2xl md:hidden cursor-pointer"
+            onClick={() => setSidebarOpen(true)}
+          />
 
-            <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-blue-600 bg-clip-text text-transparent">
-                Dashboard
-              </h1>
-              <p className="text-sm text-gray-500">
-                Welcome back, {savedUser?.name || "User"}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4 relative" ref={dropdownRef}>
-            {/* Inbox */}
+          <div
+            className="flex items-center gap-4 ml-auto relative"
+            ref={dropdownRef}
+          >
+            {/* INBOX */}
             <div className="relative">
               <button
                 onClick={async () => {
                   const isOpening = !showMessageDropdown;
+
                   setShowMessageDropdown(isOpening);
 
                   if (isOpening) {
                     await markAsRead();
+
+                    fetchMessages();
                   }
                 }}
-                className="bg-white p-3 rounded-2xl shadow"
+                className="bg-white p-3 rounded-xl shadow relative"
               >
-                <FiInbox className="text-xl" />
+                <FiInbox />
+
+                {unreadCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs px-2 rounded-full">
+                    {unreadCount}
+                  </span>
+                )}
               </button>
 
-              {messages.length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-gradient-to-r from-orange-500 to-blue-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                  {messages.length}
-                </span>
-              )}
-
+              {/* DROPDOWN */}
               {showMessageDropdown && (
-                <div className="absolute right-0 mt-3 w-80 bg-white rounded-3xl shadow-2xl p-4 z-50">
-                  <div className="flex justify-between mb-3">
-                    <h3 className="font-bold text-blue-600">Inbox</h3>
+                <div className="absolute right-0 mt-3 w-80 max-w-[90vw] bg-white shadow-2xl rounded-2xl p-4 z-50">
+                  <h3 className="font-bold mb-3 text-blue-600">Inbox</h3>
 
-                    <button
-                      onClick={handleOpenMessages}
-                      className="text-sm text-orange-500 font-medium"
-                    >
-                      View all
-                    </button>
-                  </div>
+                  {messages.length === 0 ? (
+                    <p className="text-sm text-gray-500">No messages yet</p>
+                  ) : (
+                    messages.slice(0, 5).map((msg) => (
+                      <div
+                        key={msg._id}
+                        onClick={() => handleOpenMessages(msg)}
+                        className="p-3 rounded-xl cursor-pointer hover:bg-gray-100 transition"
+                      >
+                        <p className="font-semibold text-sm">
+                          {msg.sender?.name || "Admin"}
+                        </p>
 
-                  <div className="space-y-3 max-h-72 overflow-y-auto">
-                    {messages.length === 0 ? (
-                      <p className="text-sm text-gray-500">No messages yet</p>
-                    ) : (
-                      messages.slice(0, 5).map((msg) => (
-                        <div
-                          key={msg._id}
-                          onClick={handleOpenMessages}
-                          className="p-3 rounded-2xl bg-gradient-to-r from-orange-50 to-blue-50 cursor-pointer"
-                        >
-                          <p className="font-semibold text-sm">
-                            {msg.senderName || "Admin"}
-                          </p>
-                          <p className="text-xs text-gray-500 truncate">
-                            {msg.content}
-                          </p>
-                        </div>
-                      ))
-                    )}
-                  </div>
+                        <p className="text-xs text-gray-500 truncate">
+                          {msg.content}
+                        </p>
+                      </div>
+                    ))
+                  )}
                 </div>
               )}
             </div>
 
-            {/* Bell */}
-            <button className="bg-white p-3 rounded-2xl shadow">
-              <FiBell className="text-xl" />
+            {/* BELL */}
+            <button className="bg-white p-3 rounded-xl shadow">
+              <FiBell />
             </button>
 
-            {/* Avatar */}
-            <div className="w-11 h-11 rounded-full bg-gradient-to-r from-orange-500 to-blue-500 text-white flex items-center justify-center font-bold shadow-lg">
+            {/* AVATAR */}
+            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-orange-500 to-blue-500 text-white flex items-center justify-center font-bold">
               {getInitials()}
             </div>
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-3xl p-6 shadow-xl flex items-center gap-4">
-            <div className="p-3 rounded-2xl bg-orange-100">
-              <FiHeart className="text-orange-500 text-xl" />
-            </div>
+        {/* WELCOME */}
+        <h1 className="text-xl md:text-2xl font-bold mb-6">
+          Welcome, {user?.name || "User"}
+        </h1>
+
+        {/* STATS */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white p-5 rounded-2xl shadow flex items-center gap-4">
+            <FiHeart className="text-orange-500 text-xl" />
+
             <div>
-              <p className="text-gray-500 text-sm">Total Donations</p>
-              <h3 className="text-2xl font-bold">$12,450</h3>
+              <p className="text-sm text-gray-500">Donations</p>
+
+              <h3 className="text-xl font-bold">$12,450</h3>
             </div>
           </div>
 
-          <div className="bg-white rounded-3xl p-6 shadow-xl flex items-center gap-4">
-            <div className="p-3 rounded-2xl bg-green-100">
-              <FiActivity className="text-green-500 text-xl" />
-            </div>
+          <div className="bg-white p-5 rounded-2xl shadow flex items-center gap-4">
+            <FiActivity className="text-green-500 text-xl" />
+
             <div>
-              <p className="text-gray-500 text-sm">Active Campaigns</p>
-              <h3 className="text-2xl font-bold">8</h3>
+              <p className="text-sm text-gray-500">Campaigns</p>
+
+              <h3 className="text-xl font-bold">8</h3>
             </div>
           </div>
 
-          <div className="bg-white rounded-3xl p-6 shadow-xl flex items-center gap-4">
-            <div className="p-3 rounded-2xl bg-blue-100">
-              <FiUsers className="text-blue-500 text-xl" />
-            </div>
+          <div className="bg-white p-5 rounded-2xl shadow flex items-center gap-4">
+            <FiUsers className="text-blue-500 text-xl" />
+
             <div>
-              <p className="text-gray-500 text-sm">Volunteers</p>
-              <h3 className="text-2xl font-bold">120</h3>
+              <p className="text-sm text-gray-500">Volunteers</p>
+
+              <h3 className="text-xl font-bold">120</h3>
             </div>
           </div>
         </div>
 
-        {/* Campaigns */}
-        <div className="bg-white rounded-3xl p-6 shadow-xl mb-8">
-          <h2 className="text-xl font-bold text-blue-600 mb-5">
-            Active Campaigns
-          </h2>
+        {/* CAMPAIGNS */}
+        <div className="bg-white rounded-2xl p-6 shadow mb-8">
+          <h2 className="font-bold text-blue-600 mb-4">Active Campaigns</h2>
 
-          <div className="grid md:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {campaigns.map((c) => (
-              <div
-                key={c.id}
-                className="p-5 rounded-3xl bg-gradient-to-r from-orange-50 to-blue-50 hover:shadow-md transition"
-              >
-                <h3 className="font-semibold mb-3">{c.title}</h3>
+              <div key={c.id} className="p-4 bg-gray-50 rounded-xl">
+                <h3 className="font-semibold mb-2">{c.title}</h3>
 
-                <div className="w-full h-3 bg-white rounded-full overflow-hidden">
+                <div className="w-full h-2 bg-gray-200 rounded">
                   <div
-                    className="h-3 bg-gradient-to-r from-orange-500 to-blue-500 rounded-full"
-                    style={{ width: `${c.progress}%` }}
+                    className="h-2 bg-blue-500 rounded"
+                    style={{
+                      width: `${c.progress}%`,
+                    }}
                   />
                 </div>
 
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-xs mt-2 text-gray-500">
                   {c.progress}% funded
                 </p>
               </div>
@@ -310,25 +412,105 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Activity */}
-        <div className="bg-white rounded-3xl p-6 shadow-xl">
-          <h2 className="text-xl font-bold text-blue-600 mb-5">
-            Recent Activity
-          </h2>
+        {/* ACTIVITIES */}
+        <div className="bg-white rounded-2xl p-6 shadow">
+          <h2 className="font-bold text-blue-600 mb-4">Recent Activity</h2>
 
           <div className="space-y-3">
             {activities.map((a) => (
               <div
                 key={a.id}
-                className="flex justify-between items-center p-4 rounded-2xl bg-gradient-to-r from-orange-50 to-blue-50"
+                className="flex justify-between bg-gray-50 p-3 rounded-xl"
               >
-                <span>{a.text}</span>
-                <span className="text-sm text-gray-500">{a.time}</span>
+                <span className="text-sm">{a.text}</span>
+
+                <span className="text-xs text-gray-500">{a.time}</span>
               </div>
             ))}
           </div>
         </div>
       </div>
+
+      {/* MESSAGE MODAL */}
+      {showEmailModal && selectedMessage && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white w-full max-w-2xl rounded-2xl shadow-xl p-6 relative">
+            {/* CLOSE */}
+            <button
+              onClick={() => setShowEmailModal(false)}
+              className="absolute top-4 right-4 text-gray-500"
+            >
+              <FiX />
+            </button>
+
+            {/* HEADER */}
+            <div className="h-2 mb-2" />
+
+            <p className="text-sm text-gray-500 mb-4">Conversation Thread</p>
+
+            {/* THREAD */}
+            <div className="bg-gray-50 p-4 rounded-xl mb-4 max-h-80 overflow-y-auto space-y-3">
+              {messageThread.length === 0 ? (
+                <p className="text-sm text-gray-500">No messages</p>
+              ) : (
+                messageThread.map((msg, index) => {
+                  // ✅ FIXED COMPARISON
+                  const isMe = String(msg.sender?._id) === String(userId);
+
+                  return (
+                    <div
+                      key={msg._id || index}
+                      className={`flex ${
+                        isMe ? "justify-end" : "justify-start"
+                      }`}
+                    >
+                      <div
+                        className={`max-w-[75%] p-3 rounded-xl text-sm ${
+                          isMe
+                            ? "bg-blue-500 text-white"
+                            : "bg-white border text-gray-800"
+                        }`}
+                      >
+                        <p className="font-semibold text-xs mb-1">
+                          {isMe ? "You" : msg.sender?.name || "Admin"}
+                        </p>
+
+                        <p>{msg.content}</p>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* REPLY */}
+            <textarea
+              value={replyText}
+              onChange={(e) => setReplyText(e.target.value)}
+              placeholder="Type your reply..."
+              className="w-full border rounded-xl p-3 mb-4 text-sm"
+              rows={4}
+            />
+
+            {/* ACTIONS */}
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowEmailModal(false)}
+                className="px-4 py-2 rounded-lg bg-gray-200"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleSendReply}
+                className="px-4 py-2 rounded-lg bg-blue-500 text-white"
+              >
+                Send
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

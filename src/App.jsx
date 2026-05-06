@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
+import VerifyEmail from "./pages/VerifyEmail";
 
 // ✅ Toast
 import { Toaster } from "react-hot-toast";
@@ -20,11 +21,12 @@ import PageNotFound from "./pages/PageNotFound";
 import Login from "./pages/Login";
 import Signup from "./pages/SignUp";
 import Volunteer from "./pages/Volunteer";
-import MessageUI from "./pages/MessageUI";
+
 import AdminUI from "./pages/AdminUI";
 
 // Loader
 import Loader from "./components/Loading";
+import EmailUI from "./pages/Email";
 
 // Stripe key
 const stripePromise = loadStripe(
@@ -77,14 +79,6 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Signup />} />
             <Route path="/volunteer" element={<Volunteer />} />
-            <Route
-              path="/messages/:id"
-              element={
-                <ProtectedRoute>
-                  <MessageUI />
-                </ProtectedRoute>
-              }
-            />
 
             <Route path="*" element={<PageNotFound />} />
             <Route
@@ -95,6 +89,9 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route path="/email" element={<EmailUI />} />
+
+            <Route path="/verify" element={<VerifyEmail />} />
 
             <Route path="/admin/dashboard" element={<AdminUI />} />
           </Routes>

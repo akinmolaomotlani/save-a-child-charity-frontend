@@ -53,6 +53,7 @@ export default function Login() {
       if (data.user) {
         localStorage.setItem("user", JSON.stringify(data.user));
         localStorage.setItem("role", data.user.role); // 👈 important
+        localStorage.setItem("adminId", data.user.id);
       }
 
       // ✅ 6. SAVE TO CONTEXT
