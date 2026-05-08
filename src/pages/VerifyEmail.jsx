@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 
 export default function VerifyEmail() {
-  const [status, setStatus] = useState("loading"); // loading | success | error
+  const [status, setStatus] = useState("loading");
   const [message, setMessage] = useState("");
 
   const [searchParams] = useSearchParams();
@@ -39,48 +39,85 @@ export default function VerifyEmail() {
 
     verify();
   }, [searchParams]);
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white shadow-lg rounded-lg p-8 text-center max-w-md w-full">
-        {status === "loading" && (
-          <>
-            <h2 className="text-xl font-semibold mb-2">Verifying...</h2>
-            <p className="text-gray-500">Please wait</p>
-          </>
-        )}
+    <div className="relative min-h-screen overflow-hidden bg-[#f8fafc] flex items-center justify-center px-4">
+      {/* Smoky White Effects */}
+      <div className="absolute top-[-120px] left-[-120px] w-[500px] h-[500px] bg-white/60 blur-3xl rounded-full" />
 
-        {status === "success" && (
-          <>
-            <h2 className="text-green-600 text-xl font-semibold mb-2">
-              ✅ Success
-            </h2>
-            <p className="text-gray-700">{message}</p>
+      <div className="absolute bottom-[-120px] right-[-120px] w-[500px] h-[500px] bg-gray-200/50 blur-3xl rounded-full" />
 
-            <button
-              onClick={() => navigate("/login")}
-              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md"
-            >
-              Go to Login
-            </button>
-          </>
-        )}
+      <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-100 to-slate-200 opacity-90" />
 
-        {status === "error" && (
-          <>
-            <h2 className="text-red-600 text-xl font-semibold mb-2">
-              ❌ Error
-            </h2>
-            <p className="text-gray-700">{message}</p>
+      {/* Floating Blur Layer */}
+      <div className="absolute top-[20%] left-[35%] w-[300px] h-[300px] bg-white/40 blur-3xl rounded-full" />
 
-            <button
-              onClick={() => navigate("/signup")}
-              className="mt-4 px-4 py-2 bg-gray-500 text-white rounded-md"
-            >
-              Back to Signup
-            </button>
-          </>
-        )}
+      {/* Card */}
+      <div className="relative z-10 w-full max-w-md">
+        <div className="bg-white/50 backdrop-blur-2xl border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.08)] rounded-3xl p-8 text-center">
+          {/* Loading */}
+          {status === "loading" && (
+            <div className="flex flex-col items-center">
+              <div className="w-20 h-20 rounded-full border-4 border-blue-400 border-t-orange-400 animate-spin mb-6" />
+
+              <h2 className="text-3xl font-bold text-gray-800 mb-2">
+                Verifying...
+              </h2>
+
+              <p className="text-gray-500 text-sm">
+                Please wait while we verify your email address
+              </p>
+            </div>
+          )}
+
+          {/* Success */}
+          {status === "success" && (
+            <div className="flex flex-col items-center">
+              <div className="w-24 h-24 rounded-full bg-green-100 flex items-center justify-center mb-6 border border-green-200">
+                <span className="text-5xl text-green-500">✓</span>
+              </div>
+
+              <h2 className="text-3xl font-bold text-gray-800 mb-3">
+                Verification Successful
+              </h2>
+
+              <p className="text-gray-600 leading-relaxed mb-6">{message}</p>
+
+              <button
+                onClick={() => navigate("/login")}
+                className="w-full bg-gradient-to-r from-blue-500 to-orange-500 hover:scale-[1.02] transition-all duration-300 text-white py-3 rounded-xl font-semibold shadow-lg"
+              >
+                Continue to Login →
+              </button>
+            </div>
+          )}
+
+          {/* Error */}
+          {status === "error" && (
+            <div className="flex flex-col items-center">
+              <div className="w-24 h-24 rounded-full bg-red-100 flex items-center justify-center mb-6 border border-red-200">
+                <span className="text-5xl text-red-500">✕</span>
+              </div>
+
+              <h2 className="text-3xl font-bold text-gray-800 mb-3">
+                Verification Failed
+              </h2>
+
+              <p className="text-gray-600 leading-relaxed mb-6">{message}</p>
+
+              <button
+                onClick={() => navigate("/register")}
+                className="w-full bg-gray-200 hover:bg-gray-300 transition-all duration-300 text-gray-800 py-3 rounded-xl font-semibold"
+              >
+                Back to Signup
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <p className="text-center text-gray-500 text-sm mt-6">
+          Secure verification powered by Save A Child
+        </p>
       </div>
     </div>
   );
