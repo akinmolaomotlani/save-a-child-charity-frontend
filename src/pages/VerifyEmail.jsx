@@ -9,36 +9,17 @@ export default function VerifyEmail() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const verify = async () => {
-      const token = searchParams.get("token");
+    const success = searchParams.get("success");
 
-      if (!token) {
-        setStatus("error");
-        setMessage("Invalid verification link");
-        return;
-      }
-
-      try {
-        const res = await fetch(
-          `https://save-a-child-charity-backend.onrender.com/api/auth/verify?token=${token}`,
-        );
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          throw new Error(data.message || "Verification failed");
-        }
-
-        setStatus("success");
-        setMessage(data.message || "Email verified successfully");
-      } catch (err) {
-        setStatus("error");
-        setMessage(err.message || "Something went wrong");
-      }
-    };
-
-    verify();
+    if (success === "true") {
+      setStatus("success");
+      setMessage("Email verified successfully");
+    } else {
+      setStatus("error");
+      setMessage("Verification failed or link expired");
+    }
   }, [searchParams]);
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#f8fafc] flex items-center justify-center px-4">
       {/* Smoky White Effects */}
