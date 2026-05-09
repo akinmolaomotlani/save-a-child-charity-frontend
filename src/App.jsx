@@ -65,20 +65,29 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/aboutus" element={<AboutUs />} />
 
-            {/* ✅ Stripe wrapped route */}
             <Route
               path="/donate"
               element={
-                <Elements stripe={stripePromise}>
-                  <Donate />
-                </Elements>
+                <ProtectedRoute>
+                  <Elements stripe={stripePromise}>
+                    <Donate />
+                  </Elements>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/volunteer"
+              element={
+                <ProtectedRoute>
+                  <Volunteer />
+                </ProtectedRoute>
               }
             />
 
             <Route path="/getinvolve" element={<GetInvolved />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Signup />} />
-            <Route path="/volunteer" element={<Volunteer />} />
 
             <Route path="*" element={<PageNotFound />} />
             <Route
@@ -93,7 +102,14 @@ function App() {
 
             <Route path="/verify" element={<VerifyEmail />} />
 
-            <Route path="/admin/dashboard" element={<AdminUI />} />
+            <Route
+              path="/admin/dashboard"
+              element={
+                <ProtectedRoute>
+                  <AdminUI />
+                </ProtectedRoute>
+              }
+            />
           </Routes>
         </RouteChangeTracker>
       </BrowserRouter>

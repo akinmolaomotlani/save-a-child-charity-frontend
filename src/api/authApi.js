@@ -4,38 +4,36 @@ export const signup = (data) => api.post("/register", data);
 
 export const login = (data) => api.post("/login", data);
 
+import { createContext, useState, useEffect } from "react";
+import API from "../api/axios";
 
+export const AuthContext = createContext();
 
-// import { createContext, useState, useEffect } from "react";
-// import API from "../api/axios";
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
 
-// export const AuthContext = createContext();
+  const login = async (email, password) => {
+    const { data } = await API.post("/auth/login", { email, password });
 
-// export const AuthProvider = ({ children }) => {
-//   const [user, setUser] = useState(null);
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
 
-//   const login = async (email, password) => {
-//     const { data } = await API.post("/auth/login", { email, password });
+    setUser(data.user);
+  };
 
-//     localStorage.setItem("token", data.token);
-//     localStorage.setItem("user", JSON.stringify(data.user));
+  const logout = () => {
+    localStorage.clear();
+    setUser(null);
+  };
 
-//     setUser(data.user);
-//   };
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (storedUser) setUser(storedUser);
+  }, []);
 
-//   const logout = () => {
-//     localStorage.clear();
-//     setUser(null);
-//   };
-
-//   useEffect(() => {
-//     const storedUser = JSON.parse(localStorage.getItem("user"));
-//     if (storedUser) setUser(storedUser);
-//   }, []);
-
-//   return (
-//     <AuthContext.Provider value={{ user, login, logout }}>
-//       {children}
-//     </AuthContext.Provider>
-//   );
-// };
+  return (
+    <AuthContext.Provider value={{ user, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
