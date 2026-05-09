@@ -18,11 +18,6 @@ export default function PageNav() {
         : "text-gray-700 hover:text-blue-600"
     }`;
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
-
   return (
     <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b shadow-sm mb-4">
       <div className="max-w-7xl mx-auto px-6">
@@ -179,16 +174,6 @@ export default function PageNav() {
                     className="text-left text-blue-600 font-medium"
                   >
                     Dashboard
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      handleLogout();
-                      setIsOpen(false);
-                    }}
-                    className="text-left text-red-500 font-medium"
-                  >
-                    Logout
                   </button>
                 </div>
               )}
