@@ -80,13 +80,6 @@ export default function PageNav() {
                   >
                     Dashboard
                   </button>
-
-                  <button
-                    onClick={handleLogout}
-                    className="text-sm text-red-500 font-medium"
-                  >
-                    Logout
-                  </button>
                 </>
               )}
             </div>
