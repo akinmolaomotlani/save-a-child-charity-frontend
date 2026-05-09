@@ -91,7 +91,7 @@ function App() {
             />
             <Route path="/email" element={<EmailUI />} />
 
-            <Route path="/verify-email" element={<VerifyEmail />} />
+            <Route path="/verify" element={<VerifyEmail />} />
 
             <Route path="/admin/dashboard" element={<AdminUI />} />
           </Routes>
