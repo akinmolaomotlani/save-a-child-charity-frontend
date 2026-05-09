@@ -9,22 +9,17 @@ export const AuthProvider = ({ children }) => {
 
   // LOGIN
   const login = async (email, password) => {
-    try {
-      const { data } = await API.post("/auth/login", {
-        email,
-        password,
-      });
+    const { data } = await API.post("/auth/login", {
+      email,
+      password,
+    });
 
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
 
-      setUser(data.user);
+    setUser(data.user);
 
-      return data;
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
+    return data; // ✅ ADD THIS
   };
 
   // LOGOUT
