@@ -16,7 +16,6 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // ✅ 1. VALIDATION
     if (!email || !password) {
       toast.error("Please enter email and password");
       return;
@@ -25,45 +24,11 @@ export default function Login() {
     try {
       setLoading(true);
 
-      // ✅ 2. API CALL
-      const res = await fetch(
-        "https://save-a-child-charity-backend.onrender.com/api/auth/login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email, password }),
-        },
-      );
-
-      const data = await res.json();
-
-      // ✅ 3. ERROR HANDLING
-      if (!res.ok) {
-        throw new Error(data.message || "Login failed");
-      }
-
-      // ✅ 4. SAVE TOKEN
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-      }
-
-      // ✅ 5. SAVE USER + ROLE
-      if (data.user) {
-        localStorage.setItem("user", JSON.stringify(data.user));
-        localStorage.setItem("role", data.user.role); // 👈 important
-        localStorage.setItem("adminId", data.user.id);
-      }
-
-      // ✅ 6. SAVE TO CONTEXT
-      if (typeof login === "function") {
-        login(data);
-      }
+      // USE AUTH CONTEXT LOGIN
+      const data = await login(email, password);
 
       toast.success("Login successful");
 
-      // ✅ 7. ROLE-BASED REDIRECT
       if (data.user?.role === "admin") {
         navigate("/admin/dashboard");
       } else {
@@ -71,7 +36,8 @@ export default function Login() {
       }
     } catch (error) {
       console.error(error);
-      toast.error(error.message || "Login failed");
+
+      toast.error(error.response?.data?.message || "Login failed");
     } finally {
       setLoading(false);
     }
