@@ -13,6 +13,7 @@ import {
   FiBell,
   FiChevronDown,
 } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
 export default function AdminDashboard() {
   const API_URL = "http://localhost:5000/api";
@@ -260,12 +261,17 @@ export default function AdminDashboard() {
   };
 
   // ✅ LOGOUT
+  // const handleLogout = () => {
+  //   localStorage.removeItem("token");
+
+  //   localStorage.removeItem("adminId");
+  //   useNavigate("/");
+  // };
   const handleLogout = () => {
     localStorage.removeItem("token");
-
     localStorage.removeItem("adminId");
 
-    window.location.href = "/login";
+    navigate("/");
   };
 
   // ✅ INITIAL FETCH
