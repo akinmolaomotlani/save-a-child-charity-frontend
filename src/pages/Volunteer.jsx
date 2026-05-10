@@ -55,11 +55,15 @@ export default function VolunteerForm() {
       }
 
       // API REQUEST
-      const response = await axios.post(`${API_URL}`, volunteerData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
+      const response = await axios.post(
+        `${API_URL}/volunteers`,
+        volunteerData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         },
-      });
+      );
 
       alert(response.data.message);
 
