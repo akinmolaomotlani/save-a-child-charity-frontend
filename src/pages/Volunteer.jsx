@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import PageNav from "../components/PageNav";
+import API_URL from "../config/api";
 
 export default function VolunteerForm() {
   const [formData, setFormData] = useState({
@@ -54,15 +55,11 @@ export default function VolunteerForm() {
       }
 
       // API REQUEST
-      const response = await axios.post(
-        "http://localhost:5000/api/volunteers",
-        volunteerData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
+      const response = await axios.post(`${API_URL}`, volunteerData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
         },
-      );
+      });
 
       alert(response.data.message);
 

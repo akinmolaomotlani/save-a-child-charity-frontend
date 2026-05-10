@@ -1,4 +1,3 @@
-const API_URL = "http://localhost:3000/api";
-// ⚠️ match your backend port (you used 3000 in your server)
+const API_URL = "https://save-a-child-charity-backend.onrender.com/api";
 
 export default API_URL;
