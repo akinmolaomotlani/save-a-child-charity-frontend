@@ -126,7 +126,6 @@ export default function PageNav() {
       </div>
 
       {/* MOBILE MENU */}
-      {/* MOBILE MENU */}
       <div
         className={`md:hidden fixed inset-0 z-50 transition-all duration-300 ${
           isOpen ? "pointer-events-auto" : "pointer-events-none"
@@ -135,7 +134,7 @@ export default function PageNav() {
         {/* OVERLAY */}
         <div
           onClick={() => setIsOpen(false)}
-          className={`absolute inset-0 bg-black/30 transition-opacity duration-300 ${
+          className={`absolute inset-0 transition-opacity duration-300 ${
             isOpen ? "opacity-100" : "opacity-0"
           }`}
         />
