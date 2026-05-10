@@ -68,11 +68,9 @@ function App() {
             <Route
               path="/donate"
               element={
-                <ProtectedRoute>
-                  <Elements stripe={stripePromise}>
-                    <Donate />
-                  </Elements>
-                </ProtectedRoute>
+                <Elements stripe={stripePromise}>
+                  <Donate />
+                </Elements>
               }
             />
 
