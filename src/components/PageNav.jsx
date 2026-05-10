@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import Logo from "./Logo";
@@ -7,9 +7,14 @@ export default function PageNav() {
   const [isOpen, setIsOpen] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // REAL AUTH
-  const { user, logout } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
+
+  // ✅ HIDE AUTH SECTION ON DASHBOARDS
+  const hideAuthButtons =
+    location.pathname.includes("/admin/dashboard") ||
+    location.pathname.includes("/user/dashboard");
 
   const linkClass = ({ isActive }) =>
     `relative px-2 py-1 transition font-medium ${
@@ -22,14 +27,14 @@ export default function PageNav() {
     <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b shadow-sm mb-4">
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
+          {/* LOGO */}
           <NavLink to="/">
             <Logo />
           </NavLink>
 
-          {/* Desktop Menu */}
+          {/* DESKTOP MENU */}
           <div className="hidden md:flex items-center gap-10">
-            {/* Nav Links */}
+            {/* NAV LINKS */}
             <div className="flex items-center gap-8">
               <NavLink to="/" className={linkClass}>
                 Home
@@ -44,48 +49,50 @@ export default function PageNav() {
               </NavLink>
             </div>
 
-            {/* Divider */}
-            <div className="h-6 w-px bg-gray-300" />
+            {/* DIVIDER */}
+            {!hideAuthButtons && (
+              <>
+                <div className="h-6 w-px bg-gray-300" />
 
-            {/* CTA + Auth */}
-            <div className="flex items-center gap-4">
-              <NavLink
-                to="/donate"
-                className="bg-orange-500 text-white px-5 py-2 rounded-full font-medium hover:bg-orange-600 transition shadow-sm"
-              >
-                Donate
-              </NavLink>
-
-              {!user ? (
-                <>
+                {/* AUTH / CTA */}
+                <div className="flex items-center gap-4">
                   <NavLink
-                    to="/login"
-                    className="text-sm font-medium text-gray-600 hover:text-black transition"
+                    to="/donate"
+                    className="bg-orange-500 text-white px-5 py-2 rounded-full font-medium hover:bg-orange-600 transition shadow-sm"
                   >
-                    Login
+                    Donate
                   </NavLink>
 
-                  <NavLink
-                    to="/register"
-                    className="border border-gray-300 px-4 py-1.5 rounded-full text-sm font-medium hover:bg-gray-100 transition"
-                  >
-                    Sign Up
-                  </NavLink>
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={() => navigate("/user/dashboard")}
-                    className="text-sm font-medium text-blue-600"
-                  >
-                    Dashboard
-                  </button>
-                </>
-              )}
-            </div>
+                  {!user ? (
+                    <>
+                      <NavLink
+                        to="/login"
+                        className="text-sm font-medium text-gray-600 hover:text-black transition"
+                      >
+                        Login
+                      </NavLink>
+
+                      <NavLink
+                        to="/register"
+                        className="border border-gray-300 px-4 py-1.5 rounded-full text-sm font-medium hover:bg-gray-100 transition"
+                      >
+                        Sign Up
+                      </NavLink>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => navigate("/user/dashboard")}
+                      className="text-sm font-medium text-blue-600"
+                    >
+                      Dashboard
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
           </div>
 
-          {/* Mobile Toggle */}
+          {/* MOBILE TOGGLE */}
           <button
             className="md:hidden text-2xl"
             onClick={() => setIsOpen(!isOpen)}
@@ -98,13 +105,13 @@ export default function PageNav() {
       {/* MOBILE MENU */}
       {isOpen && (
         <>
-          {/* Overlay */}
+          {/* OVERLAY */}
           <div
             className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
           />
 
-          {/* Mobile Menu */}
+          {/* MOBILE CONTENT */}
           <div className="md:hidden fixed top-16 left-0 w-full bg-white z-50 py-6 px-6 space-y-6 shadow-xl">
             <NavLink
               to="/"
@@ -130,35 +137,35 @@ export default function PageNav() {
               Get Involved
             </NavLink>
 
-            <div className="border-t pt-4 space-y-4">
-              <NavLink
-                to="/donate"
-                className="block bg-orange-500 text-white text-center py-2 rounded-lg font-medium"
-                onClick={() => setIsOpen(false)}
-              >
-                Donate
-              </NavLink>
+            {!hideAuthButtons && (
+              <div className="border-t pt-4 space-y-4">
+                <NavLink
+                  to="/donate"
+                  className="block bg-orange-500 text-white text-center py-2 rounded-lg font-medium"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Donate
+                </NavLink>
 
-              {!user ? (
-                <div className="flex flex-col gap-3">
-                  <NavLink
-                    to="/login"
-                    className="text-center border py-2 rounded-lg"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Login
-                  </NavLink>
+                {!user ? (
+                  <div className="flex flex-col gap-3">
+                    <NavLink
+                      to="/login"
+                      className="text-center border py-2 rounded-lg"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      Login
+                    </NavLink>
 
-                  <NavLink
-                    to="/register"
-                    className="text-center bg-gray-100 py-2 rounded-lg"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Sign Up
-                  </NavLink>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-3">
+                    <NavLink
+                      to="/register"
+                      className="text-center bg-gray-100 py-2 rounded-lg"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      Sign Up
+                    </NavLink>
+                  </div>
+                ) : (
                   <button
                     onClick={() => {
                       navigate("/user/dashboard");
@@ -168,9 +175,9 @@ export default function PageNav() {
                   >
                     Dashboard
                   </button>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </div>
         </>
       )}
