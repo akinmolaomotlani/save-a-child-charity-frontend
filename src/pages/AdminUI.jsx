@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { AuthContext } from "../context/AuthContext";
+import { useContext } from "react";
 
 import {
   FiMenu,
@@ -46,6 +48,8 @@ export default function AdminDashboard() {
     totalMessages: 0,
     totalVolunteers: 0,
   });
+
+  const { logout } = useContext(AuthContext);
 
   // ✅ safer admin id
   const ADMIN_ID = localStorage.getItem("adminId");
@@ -261,17 +265,8 @@ export default function AdminDashboard() {
     }
   };
 
-  // ✅ LOGOUT
-  // const handleLogout = () => {
-  //   localStorage.removeItem("token");
-
-  //   localStorage.removeItem("adminId");
-  //   useNavigate("/");
-  // };
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("adminId");
-
+    logout();
     navigate("/");
   };
 
