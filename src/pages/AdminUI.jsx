@@ -49,6 +49,7 @@ export default function AdminDashboard() {
 
   // ✅ safer admin id
   const ADMIN_ID = localStorage.getItem("adminId");
+  const navigate = useNavigate();
 
   // ✅ FETCH USERS
   const fetchUsers = async () => {
