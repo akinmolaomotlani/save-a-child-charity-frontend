@@ -1,4 +1,4 @@
-import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import Logo from "./Logo";
@@ -6,7 +6,6 @@ import Logo from "./Logo";
 export default function PageNav() {
   const [isOpen, setIsOpen] = useState(false);
 
-  const navigate = useNavigate();
   const location = useLocation();
 
   const { user } = useContext(AuthContext);
@@ -56,6 +55,7 @@ export default function PageNav() {
 
                 {/* AUTH / CTA */}
                 <div className="flex items-center gap-4">
+                  {/* ✅ DONATE BUTTON */}
                   <NavLink
                     to="/donate"
                     className="bg-orange-500 text-white px-5 py-2 rounded-full font-medium hover:bg-orange-600 transition shadow-sm"
@@ -63,7 +63,8 @@ export default function PageNav() {
                     Donate
                   </NavLink>
 
-                  {!user ? (
+                  {/* ✅ SHOW LOGIN/SIGNUP ONLY WHEN USER IS NOT LOGGED IN */}
+                  {!user && (
                     <>
                       <NavLink
                         to="/login"
@@ -79,13 +80,6 @@ export default function PageNav() {
                         Sign Up
                       </NavLink>
                     </>
-                  ) : (
-                    <button
-                      onClick={() => navigate("/user/dashboard")}
-                      className="text-sm font-medium text-blue-600"
-                    >
-                      Dashboard
-                    </button>
                   )}
                 </div>
               </>
@@ -139,6 +133,7 @@ export default function PageNav() {
 
             {!hideAuthButtons && (
               <div className="border-t pt-4 space-y-4">
+                {/* ✅ DONATE */}
                 <NavLink
                   to="/donate"
                   className="block bg-orange-500 text-white text-center py-2 rounded-lg font-medium"
@@ -147,7 +142,8 @@ export default function PageNav() {
                   Donate
                 </NavLink>
 
-                {!user ? (
+                {/* ✅ LOGIN / REGISTER */}
+                {!user && (
                   <div className="flex flex-col gap-3">
                     <NavLink
                       to="/login"
@@ -165,16 +161,6 @@ export default function PageNav() {
                       Sign Up
                     </NavLink>
                   </div>
-                ) : (
-                  <button
-                    onClick={() => {
-                      navigate("/user/dashboard");
-                      setIsOpen(false);
-                    }}
-                    className="text-left text-blue-600 font-medium"
-                  >
-                    Dashboard
-                  </button>
                 )}
               </div>
             )}
