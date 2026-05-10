@@ -126,97 +126,106 @@ export default function PageNav() {
       </div>
 
       {/* MOBILE MENU */}
-      {isOpen && (
-        <>
-          {/* OVERLAY */}
-          <div
-            className="fixed inset-0 z-40"
+      {/* MOBILE MENU */}
+      <div
+        className={`md:hidden fixed inset-0 z-50 transition-all duration-300 ${
+          isOpen ? "pointer-events-auto" : "pointer-events-none"
+        }`}
+      >
+        {/* OVERLAY */}
+        <div
+          onClick={() => setIsOpen(false)}
+          className={`absolute inset-0 bg-black/30 transition-opacity duration-300 ${
+            isOpen ? "opacity-100" : "opacity-0"
+          }`}
+        />
+
+        {/* MOBILE CONTENT */}
+        <div
+          className={`absolute top-16 left-0 w-full bg-white py-6 px-6 space-y-6 shadow-2xl transform transition-all duration-300 ease-out ${
+            isOpen ? "translate-y-0 opacity-100" : "-translate-y-5 opacity-0"
+          }`}
+        >
+          <NavLink
+            to="/"
+            className="block font-medium"
             onClick={() => setIsOpen(false)}
-          />
+          >
+            Home
+          </NavLink>
 
-          {/* MOBILE CONTENT */}
-          <div className="md:hidden fixed top-16 left-0 w-full bg-white z-50 py-6 px-6 space-y-6 shadow-xl">
-            <NavLink
-              to="/"
-              className="block font-medium"
-              onClick={() => setIsOpen(false)}
-            >
-              Home
-            </NavLink>
+          <NavLink
+            to="/aboutus"
+            className="block font-medium"
+            onClick={() => setIsOpen(false)}
+          >
+            About
+          </NavLink>
 
-            <NavLink
-              to="/aboutus"
-              className="block font-medium"
-              onClick={() => setIsOpen(false)}
-            >
-              About
-            </NavLink>
+          <NavLink
+            to="/getinvolve"
+            className="block font-medium"
+            onClick={() => setIsOpen(false)}
+          >
+            Get Involved
+          </NavLink>
 
-            <NavLink
-              to="/getinvolve"
-              className="block font-medium"
-              onClick={() => setIsOpen(false)}
-            >
-              Get Involved
-            </NavLink>
+          {!hideAuthButtons && (
+            <div className="border-t pt-4 space-y-4">
+              {/* DONATE */}
+              <NavLink
+                to="/donate"
+                className="block bg-orange-500 text-white text-center py-2 rounded-lg font-medium"
+                onClick={() => setIsOpen(false)}
+              >
+                Donate
+              </NavLink>
 
-            {!hideAuthButtons && (
-              <div className="border-t pt-4 space-y-4">
-                {/* DONATE */}
-                <NavLink
-                  to="/donate"
-                  className="block bg-orange-500 text-white text-center py-2 rounded-lg font-medium"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Donate
-                </NavLink>
+              {/* MOBILE AUTH */}
+              {!user ? (
+                <div className="flex flex-col gap-3">
+                  <NavLink
+                    to="/login"
+                    className="text-center border py-2 rounded-lg"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Login
+                  </NavLink>
 
-                {/* MOBILE AUTH */}
-                {!user ? (
-                  <div className="flex flex-col gap-3">
-                    <NavLink
-                      to="/login"
-                      className="text-center border py-2 rounded-lg"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      Login
-                    </NavLink>
+                  <NavLink
+                    to="/register"
+                    className="text-center bg-gray-100 py-2 rounded-lg"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Sign Up
+                  </NavLink>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {/* DASHBOARD */}
+                  <NavLink
+                    to="/user/dashboard"
+                    className="flex items-center justify-center gap-2 bg-blue-50 text-blue-600 py-2 rounded-lg font-medium"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <FiUser />
+                    Dashboard
+                  </NavLink>
 
-                    <NavLink
-                      to="/register"
-                      className="text-center bg-gray-100 py-2 rounded-lg"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      Sign Up
-                    </NavLink>
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-3">
-                    {/* DASHBOARD */}
-                    <NavLink
-                      to="/user/dashboard"
-                      className="flex items-center justify-center gap-2 bg-blue-50 text-blue-600 py-2 rounded-lg font-medium"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      <FiUser />
-                      Dashboard
-                    </NavLink>
-
-                    {/* LOGOUT */}
-                    <button
-                      onClick={handleLogout}
-                      className="flex items-center justify-center gap-2 bg-red-50 text-red-500 py-2 rounded-lg font-medium"
-                    >
-                      <FiLogOut />
-                      Logout
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </>
-      )}
+                  {/* LOGOUT */}
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center justify-center gap-2 bg-red-50 text-red-500 py-2 rounded-lg font-medium"
+                  >
+                    <FiLogOut />
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
     </nav>
   );
 }
