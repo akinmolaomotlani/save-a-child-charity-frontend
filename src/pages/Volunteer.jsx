@@ -1,31 +1,91 @@
 import { useState } from "react";
+import axios from "axios";
 import PageNav from "../components/PageNav";
 
 export default function VolunteerForm() {
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
-    idType: "",
-    idNumber: "",
-    ssn: "",
-    passport: null,
+    phone: "",
+    skills: "",
+    availability: "",
     address: "",
-    additionalDocs: null,
+    motivation: "",
+    image: null,
   });
+
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
+
     if (files) {
-      setFormData({ ...formData, [name]: files[0] });
+      setFormData((prev) => ({
+        ...prev,
+        [name]: files[0],
+      }));
     } else {
-      setFormData({ ...formData, [name]: value });
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Volunteer Data:", formData);
-    alert("Form submitted! (Integrate with backend API)");
+
+    try {
+      setLoading(true);
+
+      // CREATE FORMDATA
+      const volunteerData = new FormData();
+
+      volunteerData.append("fullName", formData.fullName);
+      volunteerData.append("email", formData.email);
+      volunteerData.append("phone", formData.phone);
+      volunteerData.append("skills", formData.skills);
+      volunteerData.append("availability", formData.availability);
+      volunteerData.append("address", formData.address);
+      volunteerData.append("motivation", formData.motivation);
+
+      if (formData.image) {
+        volunteerData.append("image", formData.image);
+      }
+
+      // API REQUEST
+      const response = await axios.post(
+        "http://localhost:5000/api/volunteers",
+        volunteerData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        },
+      );
+
+      alert(response.data.message);
+
+      console.log(response.data);
+
+      // RESET FORM
+      setFormData({
+        fullName: "",
+        email: "",
+        phone: "",
+        skills: "",
+        availability: "",
+        address: "",
+        motivation: "",
+        image: null,
+      });
+    } catch (error) {
+      console.error(error);
+
+      alert(error.response?.data?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -42,111 +102,115 @@ export default function VolunteerForm() {
             {/* Full Name */}
             <div>
               <label className="block mb-1 font-medium">Full Name</label>
+
               <input
                 type="text"
                 name="fullName"
                 value={formData.fullName}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border rounded-md"
               />
             </div>
 
             {/* Email */}
             <div>
               <label className="block mb-1 font-medium">Email</label>
+
               <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border rounded-md"
               />
             </div>
 
-            {/* Means of Identification */}
-            <div className="flex gap-4">
-              <div className="flex-1">
-                <label className="block mb-1 font-medium">ID Type</label>
-                <select
-                  name="idType"
-                  value={formData.idType}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Select ID Type</option>
-                  <option value="driverLicense">Driver's License</option>
-                  <option value="nationalID">National ID</option>
-                  <option value="passport">Passport</option>
-                </select>
-              </div>
-
-              <div className="flex-1">
-                <label className="block mb-1 font-medium">ID Number</label>
-                <input
-                  type="text"
-                  name="idNumber"
-                  value={formData.idNumber}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-
-            {/* SSN */}
+            {/* Phone */}
             <div>
-              <label className="block mb-1 font-medium">
-                Social Security Number (SSN)
-              </label>
+              <label className="block mb-1 font-medium">Phone Number</label>
+
               <input
                 type="text"
-                name="ssn"
-                value={formData.ssn}
+                name="phone"
+                value={formData.phone}
                 onChange={handleChange}
                 required
-                placeholder="XXX-XX-XXXX"
-                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border rounded-md"
               />
             </div>
 
-            {/* Passport Photo */}
+            {/* Skills */}
             <div>
-              <label className="block mb-1 font-medium">Passport Photo</label>
+              <label className="block mb-1 font-medium">Skills</label>
+
               <input
-                type="file"
-                name="passport"
-                accept="image/*"
+                type="text"
+                name="skills"
+                value={formData.skills}
                 onChange={handleChange}
-                required
-                className="w-full"
+                placeholder="Teaching, Fundraising, Cooking"
+                className="w-full px-4 py-2 border rounded-md"
               />
+            </div>
+
+            {/* Availability */}
+            <div>
+              <label className="block mb-1 font-medium">Availability</label>
+
+              <select
+                name="availability"
+                value={formData.availability}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border rounded-md"
+              >
+                <option value="">Select Availability</option>
+
+                <option value="weekdays">Weekdays</option>
+
+                <option value="weekends">Weekends</option>
+
+                <option value="full-time">Full Time</option>
+              </select>
             </div>
 
             {/* Address */}
             <div>
               <label className="block mb-1 font-medium">Address</label>
+
               <textarea
                 name="address"
                 value={formData.address}
                 onChange={handleChange}
-                required
-                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 rows={3}
+                className="w-full px-4 py-2 border rounded-md"
               />
             </div>
 
-            {/* Additional Documents */}
+            {/* Motivation */}
             <div>
               <label className="block mb-1 font-medium">
-                Additional Documents
+                Why do you want to volunteer?
               </label>
+
+              <textarea
+                name="motivation"
+                value={formData.motivation}
+                onChange={handleChange}
+                rows={4}
+                className="w-full px-4 py-2 border rounded-md"
+              />
+            </div>
+
+            {/* Image Upload */}
+            <div>
+              <label className="block mb-1 font-medium">Upload Photo</label>
+
               <input
                 type="file"
-                name="additionalDocs"
-                accept=".pdf,.doc,.docx"
+                name="image"
+                accept="image/*"
                 onChange={handleChange}
                 className="w-full"
               />
@@ -155,9 +219,10 @@ export default function VolunteerForm() {
             {/* Submit */}
             <button
               type="submit"
+              disabled={loading}
               className="w-full py-2 bg-blue-500 text-white font-semibold rounded-md hover:bg-blue-600 transition"
             >
-              Submit
+              {loading ? "Submitting..." : "Submit Application"}
             </button>
           </form>
         </div>

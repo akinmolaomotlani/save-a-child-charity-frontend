@@ -14,7 +14,7 @@ export default function Footer() {
           <h4 className="text-xl md:text-2xl font-bold mb-4">About Us</h4>
           <p className="text-white/90 text-sm md:text-base cursor-default">
             Save A Child is dedicated to helping children in need across the
-            world—providing education, shelter, and support for those affected
+            world providing education, shelter, and support for those affected
             by wars and poverty.
           </p>
         </div>
@@ -67,13 +67,13 @@ export default function Footer() {
             <li>
               Phone:{" "}
               <a
-                href="tel:+1234567890"
+                href="tel:+1 (845)269-5688"
                 className="hover:text-white cursor-pointer"
               >
-                +1 234 567 890
+                1 (845)269-5688
               </a>
             </li>
-            <li>Address: 123 Charity St, Cityville, Country</li>
+            <li>611 County Line Road Tampa FL</li>
           </ul>
         </div>
 
