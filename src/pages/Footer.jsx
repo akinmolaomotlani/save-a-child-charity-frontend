@@ -61,7 +61,7 @@ export default function Footer() {
                 href="mailto:info@saveachild.org"
                 className="hover:text-white cursor-pointer"
               >
-                info@saveachild.org
+                saveachild.org@proton.me
               </a>
             </li>
             <li>
