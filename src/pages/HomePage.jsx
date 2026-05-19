@@ -43,7 +43,7 @@ export default function HomePage() {
           <div className="max-w-xl text-left">
             <div className="mb-8">
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold leading-tight tracking-tight mb-6">
-                Save the Child
+                Save a Child
               </h1>
               <p className="text-base sm:text-lg md:text-xl leading-relaxed text-white/90 max-w-md">
                 In places where conflict, poverty, and crisis steal childhoods,
